@@ -1,0 +1,13 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS topics (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS passages (id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS passage_versions (id TEXT PRIMARY KEY, passage_id TEXT NOT NULL REFERENCES passages(id), version_no INTEGER NOT NULL, status TEXT NOT NULL CHECK(status IN ('draft','published','archived')), content_json TEXT NOT NULL, answer_key_json TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 1, published_at TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(passage_id,version_no));
+CREATE TABLE IF NOT EXISTS single_passage_exercises (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', passage_version_id TEXT NOT NULL REFERENCES passage_versions(id), status TEXT NOT NULL CHECK(status IN ('draft','published','archived')), revision INTEGER NOT NULL DEFAULT 1, published_at TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS exercise_topics (exercise_id TEXT NOT NULL REFERENCES single_passage_exercises(id) ON DELETE CASCADE, topic_id TEXT NOT NULL REFERENCES topics(id), PRIMARY KEY(exercise_id,topic_id));
+CREATE TABLE IF NOT EXISTS full_reading_tests (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', time_limit_minutes INTEGER NOT NULL DEFAULT 60, status TEXT NOT NULL CHECK(status IN ('draft','published','archived')), revision INTEGER NOT NULL DEFAULT 1, published_at TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS test_passages (test_id TEXT NOT NULL REFERENCES full_reading_tests(id) ON DELETE CASCADE, order_no INTEGER NOT NULL CHECK(order_no BETWEEN 1 AND 3), passage_version_id TEXT NOT NULL REFERENCES passage_versions(id), PRIMARY KEY(test_id,order_no));
+CREATE TABLE IF NOT EXISTS media_assets (id TEXT PRIMARY KEY, path TEXT NOT NULL, mime TEXT NOT NULL, width INTEGER, height INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_exercise_status_date ON single_passage_exercises(status,published_at);
+CREATE INDEX IF NOT EXISTS idx_test_status_date ON full_reading_tests(status,published_at);
+CREATE INDEX IF NOT EXISTS idx_version_status ON passage_versions(status,published_at);
+CREATE INDEX IF NOT EXISTS idx_exercise_topic ON exercise_topics(topic_id,exercise_id);

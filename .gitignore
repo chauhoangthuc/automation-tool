@@ -1,0 +1,9 @@
+node_modules/
+dist/
+data/*.sqlite*
+uploads/
+.env
+.venv/
+__pycache__/
+*.py[cod]
+playwright-report/

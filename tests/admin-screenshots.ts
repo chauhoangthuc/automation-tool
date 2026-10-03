@@ -1,0 +1,9 @@
+import {chromium} from 'playwright';
+import {join} from 'node:path';
+const root='http://127.0.0.1:5173',token=process.env.READING_ADMIN_TOKEN||'local-reading-admin';
+const list=await fetch('http://127.0.0.1:3001/api/admin/passages',{headers:{'x-admin-token':token}}).then(r=>r.json()) as {id:string}[];
+const ids:Record<string,string>={};for(const x of list){const p=await fetch(`http://127.0.0.1:3001/api/admin/passages/${x.id}/draft`,{headers:{'x-admin-token':token}}).then(r=>r.json()) as {content:{questionGroups:{type:string}[]}};const type=p.content.questionGroups[0]?.type;if(type&&p.content.questionGroups.length===1&&!ids[type])ids[type]=x.id;if(ids.true_false_not_given&&ids.diagram_completion_text)break;}
+const browser=await chromium.launch({headless:true,executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',args:['--no-sandbox']});const context=await browser.newContext({viewport:{width:1440,height:900}});await context.addInitScript(value=>sessionStorage.setItem('reading-admin-token',value),token);const page=await context.newPage();const out=join(process.cwd(),'docs','reading-ui','screenshots');
+await page.goto(`${root}/admin/reading`);await page.locator('.dashboard-grid').waitFor();await page.screenshot({path:join(out,'admin-dashboard.png')});
+for(const type of ['true_false_not_given','diagram_completion_text']){await page.goto(`${root}/admin/reading/passages/${ids[type]}/edit`);await page.getByRole('button',{name:'Nhóm câu hỏi'}).click();await page.locator('.group-editor').waitFor();await page.screenshot({path:join(out,`admin-${type}.png`),fullPage:true});}
+const tests=await fetch('http://127.0.0.1:3001/api/admin/tests',{headers:{'x-admin-token':token}}).then(r=>r.json()) as {id:string}[];await page.goto(`${root}/admin/reading/tests/${tests[0].id}/edit`);await page.locator('.test-slot').first().waitFor();await page.screenshot({path:join(out,'admin-full-test.png'),fullPage:true});await browser.close();

@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ielts-space.example/schemas/reading.schema.json",
+  "title": "IELTS Space Reading Passage Version",
+  "description": "Public passage content. Other document schemas are available via $defs references; business rules are documented in reading_manual_admin_spec.md.",
+  "$ref": "#/$defs/passageVersion",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_-]+$" },
+    "nonEmptyText": { "type": "string", "minLength": 1 },
+    "instructionBlock": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "enum": ["instruction", "answer_format", "note"] },
+        "text": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "option": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "text": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "question": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "number"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "number": { "type": "integer", "minimum": 1 },
+        "prompt": { "type": "string" },
+        "targetSectionId": { "$ref": "#/$defs/id" },
+        "options": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/option" } }
+      }
+    },
+    "textPart": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["kind", "text"], "properties": { "kind": { "const": "text" }, "text": { "type": "string" } } },
+        { "type": "object", "additionalProperties": false, "required": ["kind", "questionId"], "properties": { "kind": { "const": "gap" }, "questionId": { "$ref": "#/$defs/id" } } }
+      ]
+    },
+    "richBlock": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "parts"],
+      "properties": {
+        "kind": { "enum": ["paragraph", "heading", "subheading", "bullet"] },
+        "level": { "type": "integer", "minimum": 1, "maximum": 2 },
+        "parts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/textPart" } }
+      }
+    },
+    "listContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "question_list" }, "title": { "type": "string" } }
+    },
+    "richContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "blocks"],
+      "properties": {
+        "kind": { "enum": ["rich_text_with_gaps", "notes"] },
+        "title": { "type": "string" },
+        "blocks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/richBlock" } }
+      }
+    },
+    "tableCell": {
+      "type": "object", "additionalProperties": false,
+      "required": ["parts"],
+      "properties": {
+        "parts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/textPart" } },
+        "isHeader": { "type": "boolean" }
+      }
+    },
+    "tableContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "rows"],
+      "properties": {
+        "kind": { "const": "table" },
+        "title": { "type": "string" },
+        "rows": { "type": "array", "minItems": 2, "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/tableCell" } } }
+      }
+    },
+    "flowStep": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "parts"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "parts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/textPart" } },
+        "nextStepIds": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true }
+      }
+    },
+    "flowContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "steps"],
+      "properties": {
+        "kind": { "const": "flowchart" },
+        "title": { "type": "string" },
+        "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/flowStep" } }
+      }
+    },
+    "diagramAnchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["questionId", "xPercent", "yPercent"],
+      "properties": {
+        "questionId": { "$ref": "#/$defs/id" },
+        "xPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "yPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "sourceXPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "sourceYPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "label": { "type": "string" }
+      }
+    },
+    "diagramContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "assetId", "alt", "anchors"],
+      "properties": {
+        "kind": { "const": "diagram" },
+        "title": { "type": "string" },
+        "assetId": { "$ref": "#/$defs/id" },
+        "alt": { "$ref": "#/$defs/nonEmptyText" },
+        "answerPlacement": { "enum": ["image", "below"] },
+        "anchors": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/diagramAnchor" } }
+      }
+    },
+    "questionGroup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "order", "type", "instructionBlocks", "content", "questions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "order": { "type": "integer", "minimum": 1 },
+        "type": {
+          "enum": [
+            "true_false_not_given", "yes_no_not_given", "multiple_choice_single", "multiple_choice_multiple",
+            "matching_headings", "matching_information", "matching_features", "matching_sentence_endings",
+            "sentence_completion", "short_answer", "summary_completion_text", "note_completion_text",
+            "table_completion_text", "flowchart_completion_text", "diagram_completion_text",
+            "summary_completion_word_box", "note_completion_word_box", "table_completion_word_box", "flowchart_completion_word_box"
+          ]
+        },
+        "sourceHeading": { "type": "string" },
+        "instructionBlocks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/instructionBlock" } },
+        "settings": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "optionReuse": { "enum": ["allowed", "not_allowed"] },
+            "maxWords": { "type": "integer", "minimum": 1 },
+            "allowNumber": { "type": "boolean" },
+            "selectionCount": { "type": "integer", "minimum": 2 },
+            "scoring": { "enum": ["per_slot", "unordered_set"] }
+          }
+        },
+        "options": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/option" } },
+        "content": { "oneOf": [
+          { "$ref": "#/$defs/listContent" }, { "$ref": "#/$defs/richContent" },
+          { "$ref": "#/$defs/tableContent" }, { "$ref": "#/$defs/flowContent" },
+          { "$ref": "#/$defs/diagramContent" }
+        ] },
+        "questions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/question" } }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "pattern": "_word_box$" } }, "required": ["type"] }, "then": { "required": ["options"] } },
+        { "if": { "properties": { "type": { "const": "diagram_completion_text" } }, "required": ["type"] }, "then": { "properties": { "content": { "$ref": "#/$defs/diagramContent" } } } },
+        { "if": { "properties": { "type": { "pattern": "^table_completion_" } }, "required": ["type"] }, "then": { "properties": { "content": { "$ref": "#/$defs/tableContent" } } } },
+        { "if": { "properties": { "type": { "pattern": "^flowchart_completion_" } }, "required": ["type"] }, "then": { "properties": { "content": { "$ref": "#/$defs/flowContent" } } } },
+        { "if": { "properties": { "type": { "pattern": "^note_completion_" } }, "required": ["type"] }, "then": { "properties": { "content": { "type": "object", "properties": { "kind": { "const": "notes" } } } } } },
+        { "if": { "properties": { "type": { "pattern": "^summary_completion_" } }, "required": ["type"] }, "then": { "properties": { "content": { "type": "object", "properties": { "kind": { "const": "rich_text_with_gaps" } } } } } }
+      ]
+    },
+    "passageBlock": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "text"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["paragraph", "subheading", "caption"] },
+        "text": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "section": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "label", "blocks"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/nonEmptyText" },
+        "blocks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/passageBlock" } }
+      }
+    },
+    "passageVersion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "passageVersionId", "title", "sections", "questionGroups"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "passageVersionId": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "leadIn": { "type": "string" },
+        "title": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "type": "string" },
+        "sections": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/section" } },
+        "questionGroups": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/questionGroup" } }
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sectionId", "blockId", "quote"],
+      "properties": {
+        "sectionId": { "$ref": "#/$defs/id" },
+        "blockId": { "$ref": "#/$defs/id" },
+        "quote": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "answerEntry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["questionId", "acceptedAnswers", "explanation", "evidence"],
+      "properties": {
+        "questionId": { "$ref": "#/$defs/id" },
+        "acceptedAnswers": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyText" } },
+        "explanation": { "$ref": "#/$defs/nonEmptyText" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } }
+      }
+    },
+    "answerKey": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "passageVersionId", "answers"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "passageVersionId": { "$ref": "#/$defs/id" },
+        "answers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/answerEntry" } }
+      }
+    },
+    "singlePassageExercise": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "id", "slug", "title", "passageVersionId", "topicIds", "status"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "id": { "$ref": "#/$defs/id" },
+        "slug": { "type": "string", "minLength": 1 },
+        "title": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "type": "string" },
+        "passageVersionId": { "$ref": "#/$defs/id" },
+        "topicIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "status": { "enum": ["draft", "published", "archived"] }
+      }
+    },
+    "testPassage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["order", "passageVersionId"],
+      "properties": {
+        "order": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "passageVersionId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "fullReadingTest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "id", "slug", "title", "timeLimitMinutes", "testPassages", "status"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "id": { "$ref": "#/$defs/id" },
+        "slug": { "type": "string", "minLength": 1 },
+        "title": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "type": "string" },
+        "timeLimitMinutes": { "type": "integer", "minimum": 1 },
+        "testPassages": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/testPassage" } },
+        "status": { "enum": ["draft", "published", "archived"] }
+      }
+    }
+  }
+}
