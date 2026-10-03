@@ -12,7 +12,7 @@ npm run seed
 npm run dev
 ```
 
-Mở `http://127.0.0.1:5173/admin/reading`. Token được đọc từ `READING_ADMIN_TOKEN` trong `.env`; cấu hình local mẫu là `local_admin_reading`.
+Trước khi chạy, sao chép `.env.example` thành `.env` và tự thay `READING_ADMIN_TOKEN` bằng token riêng. Sau đó mở `http://127.0.0.1:5173/admin/reading` và nhập đúng token vừa cấu hình. Chuỗi `local_admin_reading` trong file mẫu chỉ là placeholder.
 
 - **1 passage:** một bài luyện có một bài đọc và các nhóm câu hỏi. Đây là luồng nên dùng khi mới tập nhập đề.
 - **Full test · 3 passages:** một bài thi gồm đúng ba passage versions, chuyển Passage 1/2/3 ở preview và đánh số câu liên tục trên toàn bài.

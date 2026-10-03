@@ -7,11 +7,13 @@ Tool nhập đề IELTS Reading gồm luồng **1 passage** và **full test 3 pa
 ```powershell
 npm install
 npm run setup:python
+npm run setup:env
+# Mở .env và tự điền GEMINI_API_KEY cùng READING_ADMIN_TOKEN riêng của bạn
 npm run seed
 npm run dev
 ```
 
-Để nhập PDF bằng AI, điền `GEMINI_API_KEY` lấy từ Google AI Studio trong [`.env`](.env) rồi khởi động lại server. Luồng 1 passage mặc định dùng `gemini-3.5-flash-lite`; full test dùng `gemini-3-flash-preview`. Có thể đổi riêng bằng `READING_AI_MODEL_SINGLE` và `READING_AI_MODEL_FULL`. Hướng dẫn chi tiết: [Nhập PDF bằng AI](docs/reading-ui/NHAP_PDF_BANG_AI.md).
+Lệnh `setup:env` tạo `.env` cục bộ từ `.env.example` và không ghi đè file đã có. Trước khi chạy server, bắt buộc mở `.env`, điền `GEMINI_API_KEY` lấy từ Google AI Studio và thay `READING_ADMIN_TOKEN` bằng token riêng. Luồng 1 passage mặc định dùng `gemini-3.5-flash-lite`; full test dùng `gemini-3-flash-preview`. Có thể đổi riêng bằng `READING_AI_MODEL_SINGLE` và `READING_AI_MODEL_FULL`. Hướng dẫn chi tiết: [Nhập PDF bằng AI](docs/reading-ui/NHAP_PDF_BANG_AI.md).
 
 - Admin: http://127.0.0.1:5173/admin/reading
 - Danh sách học viên: http://127.0.0.1:5173/reading/passages
@@ -19,7 +21,7 @@ npm run dev
 - Full test mẫu: http://127.0.0.1:5173/reading/preview/test/sample-reading-test
 - API: http://127.0.0.1:3001/api
 
-Admin token được đọc bắt buộc từ `READING_ADMIN_TOKEN` trong `.env`; `.env.example` dùng `local_admin_reading` làm giá trị local mẫu. Hãy đổi sang token riêng trước khi triển khai. `READING_DB` có thể trỏ tới file SQLite khác. Khi khởi động, `server/db.ts` chạy migration SQL idempotent; `npm run seed` tạo chủ đề, bài mẫu và asset nếu database chưa có chủ đề. Database mặc định là `data/reading.sqlite`; ảnh upload ở `uploads/`. Hai thư mục này nằm trong `.gitignore`.
+Admin token chỉ được đọc từ `READING_ADMIN_TOKEN` trong `.env`. Chuỗi `local_admin_reading` trong `.env.example` là placeholder và phải được người cài đặt thay bằng token riêng. `READING_DB` có thể trỏ tới file SQLite khác. Khi khởi động, `server/db.ts` chạy migration SQL idempotent; `npm run seed` tạo chủ đề, bài mẫu và asset nếu database chưa có chủ đề. Database mặc định là `data/reading.sqlite`; ảnh upload ở `uploads/`. Hai thư mục này nằm trong `.gitignore`.
 
 Để tạo sẵn 19 đề mẫu độc lập, mỗi dạng câu một bài Preview có passage, câu hỏi, đáp án và giải thích, chạy `npm run seed:type-previews`. Lệnh tạo các draft còn thiếu rồi điền ví dụ chỉ vào bản nháp mẫu chưa được chỉnh, nên có thể chạy lại mà không nhân đôi hoặc ghi đè bài đang biên tập. Các bài mẫu vẫn ở trạng thái draft để bạn sửa. Trên dashboard admin, dùng **Tìm bài hoặc dạng câu** và **Lọc theo dạng câu** để tìm bài; bấm nhãn dạng câu để mở đúng nhóm trong Preview, kể cả bài có nhiều nhóm.
 

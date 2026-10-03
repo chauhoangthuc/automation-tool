@@ -16,6 +16,7 @@
     "test:validation": "tsx tests/validation.ts",
     "test:grading": "tsx tests/grading.ts",
     "setup:python": "node scripts/setup-python.mjs",
+    "setup:env": "node scripts/setup-env.mjs",
     "test:pdf-import": ".venv\\Scripts\\python.exe tests\\pdf_import_test.py"
   },
   "dependencies": {
