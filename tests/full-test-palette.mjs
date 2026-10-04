@@ -8,6 +8,9 @@ try{
  await page.goto('http://127.0.0.1:5173/admin/reading/preview/test/test_38603a42b8aa?passage=0&group=0');
  const palette=page.locator('.question-palette');
  await palette.waitFor();
+ const timer=page.getByLabel('Thời gian còn lại'),parseTimer=value=>{const [minutes,seconds]=value.match(/\d{2}:\d{2}/)?.[0].split(':').map(Number)||[];return minutes*60+seconds};
+ const firstTick=parseTimer(await timer.textContent());await page.waitForTimeout(1150);const secondTick=parseTimer(await timer.textContent());
+ if(!Number.isFinite(firstTick)||firstTick-secondTick<1||firstTick-secondTick>2)throw Error(`Countdown timer did not tick by seconds: ${firstTick} -> ${secondTick}`);
  const exitAction=page.getByRole('link',{name:'Lưu & thoát'}),submitAction=page.getByRole('button',{name:'Nộp bài'});
  if(await exitAction.locator('svg.action-icon').count()!==1||await submitAction.locator('svg.action-icon').count()!==1)throw Error('Footer action icons are missing');
  for(const icon of [exitAction.locator('svg'),submitAction.locator('svg')]){const box=await icon.boundingBox();if(!box||box.width>22||box.height>22)throw Error(`Footer icon has invalid size: ${JSON.stringify(box)}`)}
