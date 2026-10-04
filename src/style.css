@@ -79,3 +79,5 @@
 @media(max-width:760px){.preview-resizer{display:none}.preview-main.has-resizer{display:block}}
 .footer-actions .exit-btn,.footer-actions .submit-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .action-icon{width:17px;height:17px;flex:none}
+
+.footer-actions .submit-btn .action-icon{transform:translateY(1px)}
