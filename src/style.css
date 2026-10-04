@@ -68,3 +68,12 @@
 .review-list summary{list-style-position:inside}
 
 .issue-link{display:flex;align-items:center;justify-content:space-between;gap:14px;text-decoration:none;font-weight:650}.issue-link small{white-space:nowrap;color:#6f3dc4}.issue-link:hover{background:#ffe7eb;border-color:#f39aa8}.validation-focus{animation:validationPulse 1.8s ease-out;box-shadow:0 0 0 4px #8b6cff55!important}@keyframes validationPulse{0%,45%{background:#fff3c9}100%{background:#fff}}
+
+/* Resizable desktop split view. */
+.preview-main.has-resizer{gap:0}
+.preview-resizer{position:relative;display:grid;place-items:center;cursor:col-resize;touch-action:none;user-select:none;outline:none}
+.preview-resizer::before{content:"";position:absolute;inset:0 5px;border-radius:999px;background:#e5e1f3;transition:background .15s,box-shadow .15s}
+.preview-resizer span{position:relative;z-index:1;width:5px;height:46px;border-radius:999px;background:#8a72db;box-shadow:0 0 0 3px #fff}
+.preview-resizer:hover::before,.preview-resizer:focus-visible::before,.preview-resizer.dragging::before{background:#cfc5f5;box-shadow:0 0 0 2px #9178e6}
+.preview-resizer:focus-visible span{background:#5435c4}
+@media(max-width:760px){.preview-resizer{display:none}.preview-main.has-resizer{display:block}}

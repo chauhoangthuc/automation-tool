@@ -19,5 +19,19 @@ try{
  if(!await numbers.first().isVisible())throw Error('Question 1 is not reachable after scrolling back');
  mkdirSync('docs/reading-ui/screenshots',{recursive:true});
  await page.screenshot({path:'docs/reading-ui/screenshots/full-test-palette-1-40.png'});
- console.log('PASS full-test palette exposes questions 1-40');
+ const passage=page.locator('.passage-panel'),questions=page.locator('.question-panel'),resizer=page.locator('.preview-resizer');
+ const beforePassage=await passage.boundingBox(),beforeQuestions=await questions.boundingBox(),handle=await resizer.boundingBox();
+ if(!beforePassage||!beforeQuestions||!handle)throw Error('Resizable panels are missing');
+ await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);
+ await page.mouse.down();
+ await page.mouse.move(handle.x-170,handle.y+handle.height/2,{steps:8});
+ await page.mouse.up();
+ const afterPassage=await passage.boundingBox(),afterQuestions=await questions.boundingBox();
+ if(!afterPassage||!afterQuestions||afterPassage.width>=beforePassage.width-100||afterQuestions.width<=beforeQuestions.width+100)throw Error(`Panels did not resize: ${JSON.stringify({beforePassage,beforeQuestions,afterPassage,afterQuestions})}`);
+ await page.screenshot({path:'docs/reading-ui/screenshots/full-test-resizable-panels.png'});
+ const saved=await page.evaluate(()=>Number(localStorage.getItem('reading-preview-split')));
+ await page.reload();
+ const persisted=await passage.boundingBox();
+ if(!saved||!persisted||Math.abs(persisted.width-afterPassage.width)>5)throw Error('Panel ratio did not persist after reload');
+ console.log('PASS full-test palette exposes questions 1-40 and split panels resize');
 }finally{await browser.close()}
