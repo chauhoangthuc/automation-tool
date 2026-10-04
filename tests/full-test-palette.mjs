@@ -8,6 +8,9 @@ try{
  await page.goto('http://127.0.0.1:5173/admin/reading/preview/test/test_38603a42b8aa?passage=0&group=0');
  const palette=page.locator('.question-palette');
  await palette.waitFor();
+ const exitAction=page.getByRole('link',{name:'Lưu & thoát'}),submitAction=page.getByRole('button',{name:'Nộp bài'});
+ if(await exitAction.locator('svg.action-icon').count()!==1||await submitAction.locator('svg.action-icon').count()!==1)throw Error('Footer action icons are missing');
+ for(const icon of [exitAction.locator('svg'),submitAction.locator('svg')]){const box=await icon.boundingBox();if(!box||box.width>22||box.height>22)throw Error(`Footer icon has invalid size: ${JSON.stringify(box)}`)}
  const numbers=palette.locator('button');
  if(await numbers.count()!==40)throw Error(`Expected 40 question buttons, got ${await numbers.count()}`);
  const initial=await palette.evaluate(el=>({left:el.getBoundingClientRect().left,scrollLeft:el.scrollLeft,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));

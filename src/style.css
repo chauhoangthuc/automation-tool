@@ -77,3 +77,5 @@
 .preview-resizer:hover::before,.preview-resizer:focus-visible::before,.preview-resizer.dragging::before{background:#cfc5f5;box-shadow:0 0 0 2px #9178e6}
 .preview-resizer:focus-visible span{background:#5435c4}
 @media(max-width:760px){.preview-resizer{display:none}.preview-main.has-resizer{display:block}}
+.footer-actions .exit-btn,.footer-actions .submit-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.action-icon{width:17px;height:17px;flex:none}
